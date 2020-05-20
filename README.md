@@ -1,2 +1,3 @@
 # jupyterlab
-Funny development environment for Python language
+
+The definition file for Singularity container with JupyterLab 

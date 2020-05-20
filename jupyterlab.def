@@ -1,0 +1,41 @@
+Bootstrap: library
+From: ubuntu:20.04
+Stage: build
+
+%labels
+    Author martin.olejar@gmail.com
+    Version v0.0.1
+
+%help
+    JupyterLab 2.x with some nice extensions
+
+%post
+    # Install all OS dependencies for notebook server that starts but lacks all features (e.g., download as all possible file formats)
+    echo "deb http://us.archive.ubuntu.com/ubuntu $(cat /etc/os-release | grep UBUNTU_CODENAME | sed -e 's/UBUNTU_CODENAME=//g') universe" >> /etc/apt/sources.list
+    apt update && apt install -yq --no-install-recommends ca-certificates curl wget bzip2 sudo locales fonts-liberation run-one python-is-python3 python3-pip ipython3
+    # install NodeJS and npm for using jupyterlab extensions
+    curl -sL https://deb.nodesource.com/setup_14.x | bash -
+    apt install -yq --no-install-recommends nodejs
+    # clean
+    apt autoremove -y && apt clean && rm -rf /var/lib/apt/lists/*
+    # install jupyterlab and useful python modules
+    pip3 install jupyter jupyterlab xeus-python ptvsd ipywidgets ipyevents ipyleaflet matplotlib
+    jupyter nbextension enable --py --sys-prefix ipyevents
+    jupyter nbextension enable --py --sys-prefix ipyleaflet
+    # install extensions
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-leaflet
+    jupyter labextension install @jupyterlab/debugger
+    # install language-server
+    # apt update && apt install -yq build-essential python3-dev
+    # pip3 jupyter-lsp install python-language-server[all]
+    # jupyter labextension install @krassowski/jupyterlab-lsp
+    # apt autoremove -y && apt clean && rm -rf /var/lib/apt/lists/*
+    # create notebooks dir
+    mkdir /opt/notebooks
+
+%runscript
+    echo "Starting jupyterlab..."
+    echo "Open browser to localhost:8888"
+    exec jupyter lab --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser --allow-root --NotebookApp.token=
